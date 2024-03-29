@@ -7,8 +7,6 @@ Ergonomic and safe bindings to [WHP] (Windows Hypervisor Platform)
 ## Example
 
 ```rs
-use windows_hypervisor::*;
-
 let mut partition = PartitionBuilder::new()?
         .property(PartitionProperty::ProcessorCount(1))?
         .setup()?;
