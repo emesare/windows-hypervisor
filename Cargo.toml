@@ -1,0 +1,22 @@
+[package]
+name = "windows-hypervisor"
+authors = ["Mason Reed <msr@emesare.com>"]
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+tempfile = "3.10"
+
+[dependencies]
+bitflags = "2.5"
+c2rust-bitfields = "0.18"
+thiserror = "1.0"
+
+[dependencies.windows]
+version = "0.54"
+features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Hypervisor",
+    "Win32_System_Memory",
+]
