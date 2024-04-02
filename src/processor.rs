@@ -770,22 +770,22 @@ impl VirtualProcessor {
     }
 
     pub fn set_register(&mut self, register: Register, value: RegisterVal) -> Result<()> {
-        self.set_registers(&[(&register, value)])
+        self.set_registers(&[(register, value)])
     }
 
-    pub fn set_registers(&mut self, register_vals: &[(&Register, RegisterVal)]) -> Result<()> {
+    pub fn set_registers(&mut self, register_vals: &[(Register, RegisterVal)]) -> Result<()> {
         let (raw_registers, raw_values): (Vec<_>, Vec<_>) = register_vals
             .into_iter()
-            .map(|(&r, v)| (WHV_REGISTER_NAME::from(r), WHV_REGISTER_VALUE::from(*v)))
+            .map(|(r, v)| (WHV_REGISTER_NAME::from(*r), WHV_REGISTER_VALUE::from(*v)))
             .unzip();
 
         unsafe {
             WHvSetVirtualProcessorRegisters(
                 self.partition_handle.0,
                 self.index,
-                std::mem::transmute(&raw_registers),
+                raw_registers.as_ptr(),
                 raw_registers.len().try_into()?,
-                std::mem::transmute(&raw_values),
+                raw_values.as_ptr(),
             )?;
         }
 
