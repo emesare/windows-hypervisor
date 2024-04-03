@@ -1386,3 +1386,33 @@ impl From<RegisterVal> for WHV_REGISTER_VALUE {
         }
     }
 }
+
+impl From<u64> for RegisterVal {
+    fn from(value: u64) -> Self {
+        Self::Reg64(value)
+    }
+}
+
+impl From<u128> for RegisterVal {
+    fn from(value: u128) -> Self {
+        Self::Reg128(value)
+    }
+}
+
+impl From<u32> for RegisterVal {
+    fn from(value: u32) -> Self {
+        Self::Reg32(value)
+    }
+}
+
+impl From<u16> for RegisterVal {
+    fn from(value: u16) -> Self {
+        Self::Reg16(value)
+    }
+}
+
+impl From<u8> for RegisterVal {
+    fn from(value: u8) -> Self {
+        Self::Reg8(value)
+    }
+}
