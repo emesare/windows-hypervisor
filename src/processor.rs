@@ -120,7 +120,6 @@ pub struct X64FpControlStatusRegister {
     pub control: u16,
     pub status: u16,
     pub tag: u8,
-    _reserved: u8,
     pub last_op: u16,
     // TODO: So this is technically a union (rip, eip then cs)
     pub last_rip: u64,
@@ -134,7 +133,6 @@ impl From<WHV_X64_FP_CONTROL_STATUS_REGISTER> for X64FpControlStatusRegister {
                 control: value.Anonymous.FpControl,
                 status: value.Anonymous.FpStatus,
                 tag: value.Anonymous.FpTag,
-                _reserved: value.Anonymous.Reserved,
                 last_op: value.Anonymous.LastFpOp,
                 last_rip: value.Anonymous.Anonymous.LastFpRip,
             }
@@ -149,7 +147,7 @@ impl From<X64FpControlStatusRegister> for WHV_X64_FP_CONTROL_STATUS_REGISTER {
                 FpControl: value.control,
                 FpStatus: value.status,
                 FpTag: value.tag,
-                Reserved: value._reserved,
+                Reserved: 0,
                 LastFpOp: value.last_op,
                 Anonymous: WHV_X64_FP_CONTROL_STATUS_REGISTER_0_0 {
                     LastFpRip: value.last_rip,
@@ -227,8 +225,6 @@ pub struct ExitContext {
     #[bitfield(name = "instruction_len", ty = "u8", bits = "0..=3")]
     #[bitfield(name = "cr8", ty = "u8", bits = "4..=7")]
     _bitfield: [u8; 1],
-    _reserved: u8,
-    _reserved_2: u32,
     // TODO: Rename this to something more meaningful then add an alias for "cs"
     pub cs: SegmentRegister,
     pub rip: u64,
@@ -241,8 +237,6 @@ impl Debug for ExitContext {
             .field("execution_state", &self.execution_state)
             .field("instruction_len", &self.instruction_len())
             .field("cr8", &self.cr8())
-            .field("reserved", &self._reserved)
-            .field("reserved2", &self._reserved_2)
             .field("cs", &self.cs)
             .field("rip", &self.rip)
             .field("rflags", &self.rflags)
@@ -255,8 +249,6 @@ impl From<WHV_VP_EXIT_CONTEXT> for ExitContext {
         Self {
             execution_state: value.ExecutionState.into(),
             _bitfield: [value._bitfield],
-            _reserved: value.Reserved,
-            _reserved_2: value.Reserved2,
             cs: value.Cs.into(),
             rip: value.Rip,
             rflags: value.Rflags,
@@ -268,7 +260,6 @@ impl From<WHV_VP_EXIT_CONTEXT> for ExitContext {
 #[derive(Debug, Clone, Copy)]
 pub struct RunExitContext {
     pub exit_reason: RunExitReason,
-    _reserved: u32,
     pub context: ExitContext,
     // TODO: Do we need this as an option? Or do all reasons have this... (See [RunExitContextExt::from_union] for more info)
     pub ext: Option<RunExitContextExt>,
@@ -279,7 +270,6 @@ impl From<WHV_RUN_VP_EXIT_CONTEXT> for RunExitContext {
         let exit_reason = RunExitReason::from(value.ExitReason);
         Self {
             exit_reason,
-            _reserved: value.Reserved,
             context: ExitContext::from(value.VpContext),
             ext: RunExitContextExt::from_union(exit_reason, value.Anonymous),
         }
@@ -289,8 +279,6 @@ impl From<WHV_RUN_VP_EXIT_CONTEXT> for RunExitContext {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MemoryAccessContext {
     pub instruction_byte_count: u8,
-    // TODO: This is just alignment iirc.
-    _reserved: [u8; 3],
     // TODO: Type this better, maybe these should be [Instruction]'s?
     pub instruction_bytes: [u8; 16],
     pub access_info: MemoryAccessInfo,
@@ -302,7 +290,6 @@ impl From<WHV_MEMORY_ACCESS_CONTEXT> for MemoryAccessContext {
     fn from(value: WHV_MEMORY_ACCESS_CONTEXT) -> Self {
         Self {
             instruction_byte_count: value.InstructionByteCount,
-            _reserved: value.Reserved,
             instruction_bytes: value.InstructionBytes,
             access_info: value.AccessInfo.into(),
             gpa: value.Gpa,
@@ -314,13 +301,10 @@ impl From<WHV_MEMORY_ACCESS_CONTEXT> for MemoryAccessContext {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct IoPortAccessContext {
     pub instruction_byte_count: u8,
-    _reserved: [u8; 3],
     // TODO: Type this better, maybe these should be [Instruction]'s?
     pub instruction_bytes: [u8; 16],
     pub access_info: IoPortAccessInfo,
     pub port_number: u16,
-    // TODO: This is just alignment iirc.
-    reserved_2: [u16; 3],
     pub rax: u64,
     pub rcx: u64,
     pub rsi: u64,
@@ -333,11 +317,9 @@ impl From<WHV_X64_IO_PORT_ACCESS_CONTEXT> for IoPortAccessContext {
     fn from(value: WHV_X64_IO_PORT_ACCESS_CONTEXT) -> Self {
         Self {
             instruction_byte_count: value.InstructionByteCount,
-            _reserved: value.Reserved,
             instruction_bytes: value.InstructionBytes,
             access_info: value.AccessInfo.into(),
             port_number: value.PortNumber,
-            reserved_2: value.Reserved2,
             rax: value.Rax,
             rcx: value.Rcx,
             rsi: value.Rsi,
@@ -398,13 +380,10 @@ impl From<WHV_X64_CPUID_ACCESS_CONTEXT> for CpuidAccessContext {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VpExceptionContext {
     pub instruction_byte_count: u8,
-    _reserved: [u8; 3],
     // TODO: Type this better, maybe these should be [Instruction]'s?
     pub instruction_bytes: [u8; 16],
     pub exception_info: VpExceptionInfo,
     pub exception_type: u8,
-    // TODO: This is just alignment iirc.
-    reserved_2: [u8; 3],
     // TODO: We should type this.
     pub error_code: u32,
     pub exception_param: u64,
@@ -414,11 +393,9 @@ impl From<WHV_VP_EXCEPTION_CONTEXT> for VpExceptionContext {
     fn from(value: WHV_VP_EXCEPTION_CONTEXT) -> Self {
         Self {
             instruction_byte_count: value.InstructionByteCount,
-            _reserved: value.Reserved,
             instruction_bytes: value.InstructionBytes,
             exception_info: value.ExceptionInfo.into(),
             exception_type: value.ExceptionType,
-            reserved_2: value.Reserved2,
             error_code: value.ErrorCode,
             exception_param: value.ExceptionParameter,
         }
@@ -445,7 +422,6 @@ impl From<WHV_X64_UNSUPPORTED_FEATURE_CODE> for UnsupportedFeatureCode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct UnsupportedFeatureContext {
     pub feature_code: UnsupportedFeatureCode,
-    _reserved: u32,
     pub feature_param: u64,
 }
 
@@ -453,7 +429,6 @@ impl From<WHV_X64_UNSUPPORTED_FEATURE_CONTEXT> for UnsupportedFeatureContext {
     fn from(value: WHV_X64_UNSUPPORTED_FEATURE_CONTEXT) -> Self {
         Self {
             feature_code: value.FeatureCode.into(),
-            _reserved: value.Reserved,
             feature_param: value.FeatureParameter,
         }
     }
@@ -543,10 +518,8 @@ pub struct HypercallContext {
     pub r8: u64,
     pub rsi: u64,
     pub rdi: u64,
-    pub reserved0: u64,
     // TODO: We should really have an adjustable stride for this. Like splitting 128 bits into 4 * 32 bits for processing.
     pub xmm_registers: [u128; WHV_HYPERCALL_CONTEXT_MAX_XMM_REGISTERS as usize],
-    pub reserved1: [u64; 2],
 }
 
 impl From<WHV_HYPERCALL_CONTEXT> for HypercallContext {
@@ -559,10 +532,8 @@ impl From<WHV_HYPERCALL_CONTEXT> for HypercallContext {
             r8: value.R8,
             rsi: value.Rsi,
             rdi: value.Rdi,
-            reserved0: value.Reserved0,
             // TODO: This needs to be removed...
             xmm_registers: unsafe { std::mem::transmute(value.XmmRegisters) },
-            reserved1: value.Reserved1,
         }
     }
 }
@@ -615,7 +586,6 @@ impl From<WHV_X64_APIC_INIT_SIPI_CONTEXT> for X64ApicInitSipiContext {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct X64ApicWriteContext {
     pub ty: ApicWriteType,
-    _reserved: u32,
     pub write_value: u64,
 }
 
@@ -623,7 +593,6 @@ impl From<WHV_X64_APIC_WRITE_CONTEXT> for X64ApicWriteContext {
     fn from(value: WHV_X64_APIC_WRITE_CONTEXT) -> Self {
         Self {
             ty: value.Type.into(),
-            _reserved: value.Reserved,
             write_value: value.WriteValue,
         }
     }
@@ -655,16 +624,12 @@ impl From<WHV_X64_APIC_WRITE_TYPE> for ApicWriteType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SynicSintDeliverableContext {
     pub deliverable_sints: u16,
-    pub reserved_1: u16,
-    pub reserved_2: u32,
 }
 
 impl From<WHV_SYNIC_SINT_DELIVERABLE_CONTEXT> for SynicSintDeliverableContext {
     fn from(value: WHV_SYNIC_SINT_DELIVERABLE_CONTEXT) -> Self {
         Self {
             deliverable_sints: value.DeliverableSints,
-            reserved_1: value.Reserved1,
-            reserved_2: value.Reserved2,
         }
     }
 }

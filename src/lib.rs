@@ -19,7 +19,6 @@ pub mod processor;
 
 // TODO: Require windows target.
 // TODO: Move architecture specific stuff behind flags? I.e. `WHV_X64_*`.
-// TODO: Discard all "reserved" fields?
 
 // TODO: Rename all these errors to more idiomatic names.
 #[derive(Error, Debug)]

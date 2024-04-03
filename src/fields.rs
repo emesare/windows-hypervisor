@@ -61,7 +61,6 @@ pub struct PendingInterruptionRegister {
     #[bitfield(name = "deliver_error_code", ty = "bool", bits = "4..=4")]
     #[bitfield(name = "instruction_len", ty = "u8", bits = "5..=8")]
     #[bitfield(name = "nested_event", ty = "bool", bits = "9..=9")]
-    #[bitfield(name = "reserved", ty = "u8", bits = "10..=14")]
     #[bitfield(name = "interruption_vector", ty = "u16", bits = "15..=31")]
     #[bitfield(name = "error_code", ty = "u32", bits = "32..=64")]
     bitfield: [u8; 8],
@@ -75,7 +74,6 @@ impl Debug for PendingInterruptionRegister {
             .field("deliver_error_code", &self.deliver_error_code())
             .field("instruction_len", &self.instruction_len())
             .field("nested_event", &self.nested_event())
-            .field("reserved", &self.reserved())
             .field("interruption_vector", &self.interruption_vector())
             .field("error_code", &self.error_code())
             .finish()
@@ -105,7 +103,6 @@ pub struct DeliverabilityNotificationsRegister {
     #[bitfield(name = "nmi_notification", ty = "bool", bits = "0..=0")]
     #[bitfield(name = "interrupt_notification", ty = "bool", bits = "1..=1")]
     #[bitfield(name = "interruption_priority", ty = "u8", bits = "2..=5")]
-    #[bitfield(name = "reserved", ty = "u32", bits = "6..=47")]
     #[bitfield(name = "sint", ty = "u16", bits = "48..=64")]
     bitfield: [u8; 8],
 }
@@ -116,7 +113,6 @@ impl Debug for DeliverabilityNotificationsRegister {
             .field("nmi_notification", &self.nmi_notification())
             .field("interrupt_priority", &self.interrupt_notification())
             .field("interruption_priority", &self.interruption_priority())
-            .field("reserved", &self.reserved())
             .field("sint", &self.sint())
             .finish()
     }
@@ -144,9 +140,7 @@ impl From<DeliverabilityNotificationsRegister> for WHV_X64_DELIVERABILITY_NOTIFI
 pub struct PendingExceptionEvent {
     #[bitfield(name = "event_pending", ty = "bool", bits = "0..=0")]
     #[bitfield(name = "event_type", ty = "bool", bits = "1..=3")]
-    #[bitfield(name = "reserved_0", ty = "u8", bits = "4..=7")]
     #[bitfield(name = "deliver_error_code", ty = "u32", bits = "8..=8")]
-    #[bitfield(name = "reserved_1", ty = "u16", bits = "9..=15")]
     #[bitfield(name = "vector", ty = "u16", bits = "16..=31")]
     bitfield: [u8; 4],
     error_code: u32,
@@ -158,9 +152,7 @@ impl Debug for PendingExceptionEvent {
         f.debug_struct("PendingExceptionEvent")
             .field("event_pending", &self.event_pending())
             .field("event_type", &self.event_type())
-            .field("reserved_0", &self.reserved_0())
             .field("deliver_error_code", &self.deliver_error_code())
-            .field("reserved_1", &self.reserved_1())
             .field("vector", &self.vector())
             .field("error_code", &self.error_code)
             .field("exception_param", &self.exception_param)
@@ -198,10 +190,8 @@ impl From<PendingExceptionEvent> for WHV_X64_PENDING_EXCEPTION_EVENT {
 pub struct PendingExtIntEvent {
     #[bitfield(name = "event_pending", ty = "bool", bits = "0..=0")]
     #[bitfield(name = "event_type", ty = "bool", bits = "1..=3")]
-    #[bitfield(name = "reserved_0", ty = "u8", bits = "4..=7")]
     #[bitfield(name = "vector", ty = "u32", bits = "8..=15")]
     bitfield: [u8; 8],
-    _reserved_2: u64,
 }
 
 impl Debug for PendingExtIntEvent {
@@ -209,9 +199,7 @@ impl Debug for PendingExtIntEvent {
         f.debug_struct("PendingExtIntEvent")
             .field("event_pending", &self.event_pending())
             .field("event_type", &self.event_type())
-            .field("reserved_0", &self.reserved_0())
             .field("vector", &self.vector())
-            .field("reserved_2", &self._reserved_2)
             .finish()
     }
 }
@@ -222,7 +210,6 @@ impl From<WHV_X64_PENDING_EXT_INT_EVENT> for PendingExtIntEvent {
         unsafe {
             Self {
                 bitfield: value.Anonymous._bitfield.to_ne_bytes(),
-                _reserved_2: value.Anonymous.Reserved2,
             }
         }
     }
@@ -233,7 +220,7 @@ impl From<PendingExtIntEvent> for WHV_X64_PENDING_EXT_INT_EVENT {
         Self {
             Anonymous: WHV_X64_PENDING_EXT_INT_EVENT_0 {
                 _bitfield: u64::from_ne_bytes(value.bitfield),
-                Reserved2: value._reserved_2,
+                Reserved2: 0,
             },
         }
     }

@@ -71,7 +71,6 @@ impl From<PartitionPropertyCode> for WHV_PARTITION_PROPERTY_CODE {
 #[derive(Debug, Clone, Copy)]
 pub struct SyntheticProcessorFeaturesBanks {
     pub banks_count: u32,
-    pub reserved0: u32,
     pub bank_0: SyntheticProcessorFeatures,
 }
 
@@ -79,7 +78,6 @@ impl From<WHV_SYNTHETIC_PROCESSOR_FEATURES_BANKS> for SyntheticProcessorFeatures
     fn from(value: WHV_SYNTHETIC_PROCESSOR_FEATURES_BANKS) -> Self {
         Self {
             banks_count: value.BanksCount,
-            reserved0: value.Reserved0,
             bank_0: unsafe { value.Anonymous.Anonymous.Bank0.into() },
         }
     }
@@ -89,7 +87,7 @@ impl From<SyntheticProcessorFeaturesBanks> for WHV_SYNTHETIC_PROCESSOR_FEATURES_
     fn from(value: SyntheticProcessorFeaturesBanks) -> Self {
         Self {
             BanksCount: value.banks_count,
-            Reserved0: value.reserved0,
+            Reserved0: 0,
             Anonymous: WHV_SYNTHETIC_PROCESSOR_FEATURES_BANKS_0 {
                 Anonymous: WHV_SYNTHETIC_PROCESSOR_FEATURES_BANKS_0_0 {
                     Bank0: value.bank_0.into(),
@@ -102,7 +100,6 @@ impl From<SyntheticProcessorFeaturesBanks> for WHV_SYNTHETIC_PROCESSOR_FEATURES_
 #[derive(Debug, Clone, Copy)]
 pub struct X64CpuidResult {
     pub function: u32,
-    _reserved: [u32; 3],
     pub eax: u32,
     pub ebx: u32,
     pub ecx: u32,
@@ -113,7 +110,6 @@ impl From<WHV_X64_CPUID_RESULT> for X64CpuidResult {
     fn from(value: WHV_X64_CPUID_RESULT) -> Self {
         Self {
             function: value.Function,
-            _reserved: value.Reserved,
             eax: value.Eax,
             ebx: value.Ebx,
             ecx: value.Ecx,
@@ -126,7 +122,7 @@ impl From<X64CpuidResult> for WHV_X64_CPUID_RESULT {
     fn from(value: X64CpuidResult) -> Self {
         Self {
             Function: value.function,
-            Reserved: value._reserved,
+            Reserved: Default::default(),
             Eax: value.eax,
             Ebx: value.ebx,
             Ecx: value.ecx,
@@ -206,7 +202,6 @@ pub struct MsrActionEntry {
     pub index: u32,
     pub read_action: u8,
     pub write_action: u8,
-    pub _reserved: u16,
 }
 
 impl From<WHV_MSR_ACTION_ENTRY> for MsrActionEntry {
@@ -215,7 +210,6 @@ impl From<WHV_MSR_ACTION_ENTRY> for MsrActionEntry {
             index: value.Index,
             read_action: value.ReadAction,
             write_action: value.WriteAction,
-            _reserved: value.Reserved,
         }
     }
 }
@@ -226,7 +220,7 @@ impl From<MsrActionEntry> for WHV_MSR_ACTION_ENTRY {
             Index: value.index,
             ReadAction: value.read_action,
             WriteAction: value.write_action,
-            Reserved: value._reserved,
+            Reserved: 0,
         }
     }
 }
@@ -288,7 +282,6 @@ impl From<X64LocalApicEmulationMode> for WHV_X64_LOCAL_APIC_EMULATION_MODE {
 #[derive(Debug, Clone, Copy)]
 pub struct ProcessorFeaturesBanks {
     pub banks_count: u32,
-    pub reserved0: u32,
     pub bank_0: ProcessorFeatures,
     pub bank_1: ProcessorFeatures1,
 }
@@ -297,7 +290,6 @@ impl From<WHV_PROCESSOR_FEATURES_BANKS> for ProcessorFeaturesBanks {
     fn from(value: WHV_PROCESSOR_FEATURES_BANKS) -> Self {
         Self {
             banks_count: value.BanksCount,
-            reserved0: value.Reserved0,
             bank_0: unsafe { value.Anonymous.Anonymous.Bank0.into() },
             bank_1: unsafe { value.Anonymous.Anonymous.Bank1.into() },
         }
@@ -308,7 +300,7 @@ impl From<ProcessorFeaturesBanks> for WHV_PROCESSOR_FEATURES_BANKS {
     fn from(value: ProcessorFeaturesBanks) -> Self {
         Self {
             BanksCount: value.banks_count,
-            Reserved0: value.reserved0,
+            Reserved0: 0,
             Anonymous: WHV_PROCESSOR_FEATURES_BANKS_0 {
                 Anonymous: WHV_PROCESSOR_FEATURES_BANKS_0_0 {
                     Bank0: value.bank_0.into(),
